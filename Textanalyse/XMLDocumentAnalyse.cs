@@ -72,34 +72,38 @@ namespace Textanalyse
                 }
                 else
                 {
-                    if (words[i].Contains('!'))
+                    for(int n = 0; n <10; n++)
                     {
-                        string[] splitWord = words[i].Split('!');
-                        words[i] = splitWord[0];
-                        words.Insert(i + 1, "!");
-                        i++;
+                        checkNumber(n);
                     }
-                    if (words[i].Contains('.'))
+
+                    void checkNumber(int number)
                     {
-                        string[] splitWord = words[i].Split('.');
-                        words[i] = splitWord[0];
-                        words.Insert(i + 1, ".");
-                        i++;
+                        if (words[i].StartsWith(number.ToString()))
+                        {
+                            string splitWord = words[i].Substring(1);
+                            words[i] = number.ToString();
+                            words.Insert(i + 1, splitWord);
+                            i++;
+                        }
                     }
-                    if (words[i].Contains('?'))
+
+                    checkPunctuation('!');
+                    checkPunctuation('.');
+                    checkPunctuation('?');
+                    checkPunctuation(',');
+
+                    void checkPunctuation(char pMark)
                     {
-                        string[] splitWord = words[i].Split('?');
-                        words[i] = splitWord[0];
-                        words.Insert(i + 1, "?");
-                        i++;
+                        if (words[i].Contains(pMark))
+                        {
+                            string[] splitWord = words[i].Split(pMark);
+                            words[i] = splitWord[0];
+                            words.Insert(i + 1, pMark.ToString());
+                            i++;
+                        }
                     }
-                    if (words[i].Contains(','))
-                    {
-                        string[] splitWord = words[i].Split(',');
-                        words[i] = splitWord[0];
-                        words.Insert(i + 1, ",");
-                        i++;
-                    }
+
                 }
             }
 
@@ -131,11 +135,58 @@ namespace Textanalyse
             return number;
         }
 
+        public string CreateWordCountList()
+        {
+            string wordCountList = "";
+            List <CountingClass<string> > wordCount = new List<CountingClass<string>>();
+            for (int i = 0; i < words.Count; i++)
+            {
+                if (!Endmark(words[i]) & (words[i] != ","))
+                {
+                    if(i == 0)
+                    {
+                        wordCount.Add(new CountingClass<string>(words[i]));
+                    }
+                    else
+                    {
+                        bool foundMatch = false;
+                        foreach(CountingClass<string> w in wordCount)
+                        {
+                            if (words[i].ToLower() == w.getCountedObject())
+                            {
+                                w.increaseNumberCount();
+                                foundMatch = true;
+                                break;
+                            }
+                        }
+                        if(!foundMatch)
+                            wordCount.Add(new CountingClass<string>(words[i].ToLower()));
+                    }
+                }
+            }
+            IEnumerable<CountingClass<string>> wl = wordCount.OrderByDescending(wordCount => wordCount.getObjectCount());
+            int count = 0;
+            foreach(CountingClass<string> w in wl)
+            {
+                if(w.getObjectCount() == count)
+                {
+                    wordCountList += ", " + w.getCountedObject();
+                    
+                }
+                else
+                {
+                    wordCountList += Environment.NewLine + w.getObjectCount() + " : " + w.getCountedObject();
+                    count = w.getObjectCount();
+                }
+            }
+
+            return wordCountList;
+        }
 
 
         public string CountWordsInSentence()
         {
-            List<NumberCount> sentenceLengthList = new List<NumberCount>();
+            List<CountingClass<int>> sentenceLengthList = new List<CountingClass<int>>();
 
             int sentenceLength = 0;
             for (int i = 0; i < words.Count; i++)
@@ -150,27 +201,27 @@ namespace Textanalyse
 
                 if (sentenceLengthList.Count < 2)
                 {
-                    sentenceLengthList.Add(new NumberCount(sentenceLength));
+                    sentenceLengthList.Add(new CountingClass<int>(sentenceLength));
                 }
                 else
                 {
                     for (int k = 0; k < sentenceLengthList.Count; k++)
                     {
-                        if (sentenceLength == sentenceLengthList[k].getNumber())
+                        if (sentenceLength == sentenceLengthList[k].getCountedObject())
                         {
                             sentenceLengthList[k].increaseNumberCount();
                             break;
                         }
-                        else if (sentenceLength < sentenceLengthList[k].getNumber())
+                        else if (sentenceLength < sentenceLengthList[k].getCountedObject())
                         {
-                            sentenceLengthList.Insert(k, new NumberCount(sentenceLength));
+                            sentenceLengthList.Insert(k, new CountingClass<int>(sentenceLength));
                             break;
                         }
                         else
                         {
                             if (k == sentenceLengthList.Count - 1)
                             {
-                                sentenceLengthList.Add(new NumberCount(sentenceLength));
+                                sentenceLengthList.Add(new CountingClass<int>(sentenceLength));
                                 break;
                             }
                         }
@@ -181,9 +232,9 @@ namespace Textanalyse
         }
 
             string textToReturn = "";
-            foreach (NumberCount z in sentenceLengthList)
+            foreach (CountingClass<int> z in sentenceLengthList)
             {
-                textToReturn += "Satzlänge: " + z.getNumber() + " Häufigkeit: " + z.getNumberCount() +Environment.NewLine;
+                textToReturn += "Satzlänge: " + z.getCountedObject() + " Häufigkeit: " + z.getObjectCount() +Environment.NewLine;
             }
             return textToReturn;
         }

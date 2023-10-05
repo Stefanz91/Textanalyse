@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -37,13 +38,6 @@ namespace Textanalyse
             // Get the text from the TextBox
             path = textBox.Text;
 
-           
-            //make a key-enter event to take the input
-            if(Keyboard.IsKeyDown(Key.Enter) && TeBlOutput != null)
-            {
-                // Set the text of TeBlOutput to the retrieved text
-                //TeBlOutput.Text = newText;
-            }
         }
 
         private void btnPath_Click(object sender, RoutedEventArgs e)
@@ -68,18 +62,32 @@ namespace Textanalyse
 
         private void btnSentecelength_Click(object sender, RoutedEventArgs e)
         {
-            if(Analyse != null)
-            {
-                MessageBox.Show(Analyse.CountWordsInSentence());
-            }
+            HandleAnalyseActions(() => Analyse.CountWordsInSentence());
         }
 
         private void btnShowText_Click(object sender, RoutedEventArgs e)
         {
+            
+            HandleAnalyseActions(() => Analyse.ShowText());
+        }
+
+        private void btnCountWords_Click(object sender, RoutedEventArgs e)
+        {
+            HandleAnalyseActions(() => Analyse.CreateWordCountList());
+        }
+
+        private void HandleAnalyseActions(Func<string> func)
+        {
             if (Analyse != null)
             {
-                MessageBox.Show(Analyse.ShowText());
+                MessageBox.Show(func());
+            }
+            else
+            {
+                TeBlOutput.Text = "Keine Datei eingelesen!";
             }
         }
+
+        
     }
 }
